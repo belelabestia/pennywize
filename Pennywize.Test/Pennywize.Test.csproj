@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Pennywize.Core\Pennywize.Core.csproj" />
+    <ProjectReference Include="..\Pennywize.CLI\Pennywize.CLI.csproj" />
   </ItemGroup>
 
 </Project>

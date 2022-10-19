@@ -1,16 +1,14 @@
 using LiteDB;
 using Pennywize.Core;
 
-namespace Pennywize.Test;
-
-public class Transactions_Test
+public class TransactionsTest
 {
-    BaseTransaction t1 => new(
-         Amount: 10,
-         Note: "Some note",
-         DateTime: DateTime.Now.ToSavedDateTime());
+    BaseTransaction t1 = new(
+        Amount: 10,
+        Note: "Some note",
+        DateTime: DateTime.Now.ToSavedDateTime());
 
-    BaseTransaction t2 => new(
+    BaseTransaction t2 = new(
         Amount: 11,
         Note: "Some other note",
         DateTime: DateTime.Now.AddDays(2).ToSavedDateTime());
