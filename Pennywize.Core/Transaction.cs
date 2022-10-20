@@ -1,36 +1,30 @@
 ﻿using LiteDB;
-using static Pennywize.Core.Database;
 
 namespace Pennywize.Core;
+using static Database;
 
-public record SavedTransaction(
-    ObjectId _id,
+
+public record Transaction(
     decimal Amount,
     string Note,
-    DateTime DateTime);
-
-public record BaseTransaction(
-    decimal Amount,
-    string Note,
-    DateTime DateTime);
+    DateTime DateTime)
+{
+    public ObjectId? Id { get; init; }
+    public bool IsSaved => Id is not null;
+    public bool IsNew => !IsSaved;
+}
 
 public static class Transactions
 {
-    public static List<SavedTransaction> List() =>
-        Use<SavedTransaction, List<SavedTransaction>>(t => t.FindAll().ToList());
+    public static List<Transaction> List() =>
+        Use<Transaction, List<Transaction>>(t => t.FindAll().ToList());
 
-    public static ObjectId Add(BaseTransaction transaction) =>
-        Use<SavedTransaction, ObjectId>(t => t.Insert(transaction.WithId()));
+    public static ObjectId Add(Transaction transaction) =>
+        Use<Transaction, ObjectId>((t) => t.Insert(transaction));
 
-    public static void Edit(SavedTransaction transaction) =>
-        Use<SavedTransaction>(t => t.Update(transaction));
+    public static void Edit(Transaction transaction) =>
+        Use<Transaction>(t => t.Update(transaction));
 
     public static void Remove(ObjectId transactionId) =>
-        Use<SavedTransaction>(t => t.Delete(transactionId));
-
-    public static SavedTransaction WithId(this BaseTransaction t, ObjectId? objectId = null) => new(
-        _id: objectId ?? ObjectId.NewObjectId(),
-        Amount: t.Amount,
-        Note: t.Note,
-        DateTime: t.DateTime);
+        Use<Transaction>(t => t.Delete(transactionId));
 }

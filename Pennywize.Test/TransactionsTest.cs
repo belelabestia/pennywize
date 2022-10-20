@@ -1,14 +1,13 @@
-using LiteDB;
 using Pennywize.Core;
 
 public class TransactionsTest
 {
-    BaseTransaction t1 = new(
+    Transaction t1 = new(
         Amount: 10,
         Note: "Some note",
         DateTime: DateTime.Now.ToSavedDateTime());
 
-    BaseTransaction t2 = new(
+    Transaction t2 = new(
         Amount: 11,
         Note: "Some other note",
         DateTime: DateTime.Now.AddDays(2).ToSavedDateTime());
@@ -21,10 +20,10 @@ public class TransactionsTest
         var id1 = Transactions.Add(t1);
         var id2 = Transactions.Add(t2);
 
-        var expected = new List<SavedTransaction>
+        var expected = new List<Transaction>
         {
-            t1.WithId(id1),
-            t2.WithId(id2)
+            t1 with { Id = id1 },
+            t2 with { Id = id2 }
         };
 
         var actual = Transactions.List();
@@ -40,7 +39,7 @@ public class TransactionsTest
         var id = Transactions.Add(t1);
         var res = Transactions.List();
 
-        var expected = t1.WithId(id);
+        var expected = t1 with { Id = id };
         var actual = res.First();
 
         Assert.Equal(expected, actual);
@@ -53,7 +52,7 @@ public class TransactionsTest
 
         var id1 = Transactions.Add(t1);
 
-        var expected = t1.WithId(id1) with { Note = "New updated note" };
+        var expected = t1 with { Id = id1 } with { Note = "New updated note" };
 
         Transactions.Edit(expected);
 
@@ -72,9 +71,9 @@ public class TransactionsTest
 
         Transactions.Remove(id1);
 
-        var expected = new List<SavedTransaction>
+        var expected = new List<Transaction>
         {
-            t2.WithId(id2)
+            t2 with { Id = id2 }
         };
 
         var actual = Transactions.List();

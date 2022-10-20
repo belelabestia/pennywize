@@ -1,4 +1,6 @@
-public record Config(string DatabaseName)
+namespace Pennywize.Core;
+
+public static class Config
 {
-    public static Config Default => new(@"pwz.db");
+    public const string DbName = @"pwz.db";
 }
