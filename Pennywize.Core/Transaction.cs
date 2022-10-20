@@ -10,6 +10,7 @@ public record Transaction(
     DateTime DateTime)
 {
     public ObjectId? Id { get; init; }
+    public string? StringId => Id?.ToString();
     public bool IsSaved => Id is not null;
     public bool IsNew => !IsSaved;
 }
@@ -22,7 +23,7 @@ public static class Transactions
     public static ObjectId Add(Transaction transaction) =>
         Use<Transaction, ObjectId>((t) => t.Insert(transaction));
 
-    public static void Edit(Transaction transaction) =>
+    public static void Update(Transaction transaction) =>
         Use<Transaction>(t => t.Update(transaction));
 
     public static void Remove(ObjectId transactionId) =>

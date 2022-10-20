@@ -54,7 +54,7 @@ public class TransactionsTest
 
         var expected = t1 with { Id = id1 } with { Note = "New updated note" };
 
-        Transactions.Edit(expected);
+        Transactions.Update(expected);
 
         var actual = Transactions.List().Single();
 
