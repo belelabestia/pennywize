@@ -1,5 +1,4 @@
 using System.CommandLine;
-using Pennywize.Core;
 using static Utils;
 
 namespace Pennywize.CLI;
@@ -29,7 +28,8 @@ public static class Commands
                 description: "List transactions.",
                 handle: Transactions.List),
             getAddCommand(),
-            getUpdateCommand()
+            getUpdateCommand(),
+            getRemoveCommand()
         };
 
     static Command getAddCommand()
@@ -56,17 +56,18 @@ public static class Commands
             options: new Option[] { id, amount, note, dateTime });
     }
 
-    static Command getTransactionCommand(string name, string description, Action<Transaction> handle)
+    static Command getRemoveCommand()
     {
-        var (amount, note, dateTime) = getAddOptions();
+        var id = getRemoveOptions();
 
         return Command(
-            name,
-            description,
-            handle,
-            bind: Transactions.Bind(amount, note, dateTime),
-            options: new Option[] { amount, note, dateTime });
+            name: "remove",
+            description: "Remove transaction.",
+            handle: Transactions.Remove,
+            bind: Transactions.BindId(id),
+            options: new Option[] { id });
     }
+
 
     static (Option<decimal>, Option<string>, Option<DateTime>) getAddOptions() => (
         Option<decimal>(
@@ -98,4 +99,8 @@ public static class Commands
             name: "--date-time",
             description: "Date and time of the transaction",
             defaultFactory: () => DateTime.Now));
+
+    static Option<string> getRemoveOptions() => Option<string>(
+        name: "--id",
+        description: "The transaction id.");
 }

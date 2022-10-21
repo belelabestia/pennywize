@@ -21,19 +21,19 @@ public static class Transactions
                 Note: context.ParseResult.GetValueForOption(note)!,
                 DateTime: context.ParseResult.GetValueForOption(dateTime));
 
-            string idStr() => context.ParseResult.GetValueForOption(id)!;
-
             return id is null ?
                 transaction :
-                transaction with { Id = new ObjectId(idStr()) };
+                transaction with { Id = BindId(id)(context) };
         };
+
+    public static Func<InvocationContext, ObjectId> BindId(Option<string> id) => context => new ObjectId(context.ParseResult.GetValueForOption(id));
 
     public static void List()
     {
         var transactions = T.List();
         var output = JSON.Serialize(transactions, new JsonSerializerOptions { WriteIndented = true });
 
-        Console.WriteLine("Transactions");
+        Console.WriteLine($"Transactions ({transactions.Count()})");
         Console.WriteLine(output);
     }
 
@@ -50,5 +50,11 @@ public static class Transactions
     {
         T.Update(transaction);
         Console.WriteLine("Transaction updated.");
+    }
+
+    public static void Remove(ObjectId id)
+    {
+        T.Remove(id);
+        Console.WriteLine("Transaction removed.");
     }
 }
