@@ -1,60 +1,80 @@
-using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.Text.Json;
-using LiteDB;
-using Pennywize.Core;
-using JSON = System.Text.Json.JsonSerializer;
-using T = Pennywize.Core.Transactions;
-
 namespace Pennywize.CLI;
 
+using LiteDB;
+using C = Pennywize.Core;
+using T = Pennywize.Core.Transactions;
+
+public record Transaction(
+    string? Id,
+    decimal Amount,
+    string Note,
+    DateTime DateTime);
+
+/// <summary>
+/// This module contains 
+/// </summary>
 public static class Transactions
 {
-    public static Func<InvocationContext, Transaction> Bind(
-        Option<decimal> amount,
-        Option<string> note,
-        Option<DateTime> dateTime,
-        Option<string>? id = null) => context =>
-        {
-            var transaction = new Transaction(
-                Amount: context.ParseResult.GetValueForOption(amount),
-                Note: context.ParseResult.GetValueForOption(note)!,
-                DateTime: context.ParseResult.GetValueForOption(dateTime));
+    /// <summary>
+    /// Shows all the transactions.
+    /// </summary>
+    public static IEnumerable<Transaction> List() => T.List().Select(ToCliTransaction);
 
-            return id is null ?
-                transaction :
-                transaction with { Id = BindId(id)(context) };
-        };
-
-    public static Func<InvocationContext, ObjectId> BindId(Option<string> id) => context => new ObjectId(context.ParseResult.GetValueForOption(id));
-
-    public static void List()
+    /// <summary>
+    /// Adds a new transaction.
+    /// </summary>
+    /// <param name="transaction"></param>
+    /// <returns></returns>
+    public static Transaction Add(Transaction transaction)
     {
-        var transactions = T.List();
-        var output = JSON.Serialize(transactions, new JsonSerializerOptions { WriteIndented = true });
-
-        Console.WriteLine($"Transactions ({transactions.Count()})");
-        Console.WriteLine(output);
+        var id = T.Add(transaction.ToCoreTransaction());
+        return transaction with { Id = id.ToString() };
     }
 
-    public static void Add(Transaction transaction)
+    /// <summary>
+    /// Updates an existing transaction.
+    /// </summary>
+    /// <param name="transaction"></param>
+    /// <returns></returns>
+    public static Transaction Update(Transaction transaction)
     {
-        var id = T.Add(transaction);
-        var output = JSON.Serialize(transaction with { Id = id }, new JsonSerializerOptions { WriteIndented = true });
-
-        Console.WriteLine("Transaction created");
-        Console.WriteLine(output);
+        T.Update(transaction.ToCoreTransaction());
+        return transaction;
     }
 
-    public static void Update(Transaction transaction)
-    {
-        T.Update(transaction);
-        Console.WriteLine("Transaction updated.");
-    }
+    /// <summary>
+    /// Deletes an existing transaction.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public static void Remove(string id) => T.Remove(id.ToObjectId());
 
-    public static void Remove(ObjectId id)
-    {
-        T.Remove(id);
-        Console.WriteLine("Transaction removed.");
-    }
+    /// <summary>
+    /// Maps from CLI Transaction to Core Transaction.
+    /// </summary>
+    /// <param name="transaction"></param>
+    /// <returns></returns>
+    static C.Transaction ToCoreTransaction(this Transaction transaction) => new C.Transaction(
+        transaction.Id?.ToObjectId(),
+        transaction.Amount,
+        transaction.Note,
+        transaction.DateTime);
+
+    /// <summary>
+    /// Maps from Core Transaction to CLI Transaction.
+    /// </summary>
+    /// <param name="transaction"></param>
+    /// <returns></returns>
+    static Transaction ToCliTransaction(this C.Transaction transaction) => new Transaction(
+        transaction.Id?.ToString(),
+        transaction.Amount,
+        transaction.Note,
+        transaction.DateTime);
+
+    /// <summary>
+    /// Maps from string to ObjectId.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    static ObjectId ToObjectId(this string id) => new ObjectId(id);
 }

@@ -3,11 +3,13 @@ using Pennywize.Core;
 public class TransactionsTest
 {
     Transaction t1 = new(
+        Id: null,
         Amount: 10,
         Note: "Some note",
         DateTime: DateTime.Now.ToSavedDateTime());
 
     Transaction t2 = new(
+        Id: null,
         Amount: 11,
         Note: "Some other note",
         DateTime: DateTime.Now.AddDays(2).ToSavedDateTime());

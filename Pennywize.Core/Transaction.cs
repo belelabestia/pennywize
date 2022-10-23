@@ -1,19 +1,14 @@
-﻿using LiteDB;
+﻿namespace Pennywize.Core;
 
-namespace Pennywize.Core;
+using LiteDB;
 using static Database;
 
 
 public record Transaction(
+    ObjectId? Id,
     decimal Amount,
     string Note,
-    DateTime DateTime)
-{
-    public ObjectId? Id { get; init; }
-    public string? StringId => Id?.ToString();
-    public bool IsSaved => Id is not null;
-    public bool IsNew => !IsSaved;
-}
+    DateTime DateTime);
 
 public static class Transactions
 {

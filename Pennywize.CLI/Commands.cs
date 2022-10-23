@@ -1,8 +1,11 @@
-using System.CommandLine;
-using static Utils;
-
 namespace Pennywize.CLI;
 
+using System.CommandLine;
+using static CommandLine;
+
+/// <summary>
+/// This module provides the fully initialized root command tree.
+/// </summary>
 public static class Commands
 {
     public static RootCommand GetRoot()
@@ -26,7 +29,9 @@ public static class Commands
             Command(
                 name: "list",
                 description: "List transactions.",
-                handle: Transactions.List),
+                handle: Result.From<IEnumerable<Transaction>, Void>(Transactions.List),
+                resolve: Resolvers.ResolveTable,
+                reject: Rejectors.RejectText("Operation failed")),
             getAddCommand(),
             getUpdateCommand(),
             getRemoveCommand()
@@ -39,8 +44,10 @@ public static class Commands
         return Command(
             name: "add",
             description: "Add transaction.",
-            handle: Transactions.Add,
-            bind: Transactions.Bind(amount, note, dateTime),
+            bind: Binders.BindTransaction(amount, note, dateTime),
+            handle: Result.From<Transaction, Transaction, Void>(Transactions.Add),
+            resolve: Resolvers.ResolveRow,
+            reject: Rejectors.RejectText("Operation failed."),
             options: new Option[] { amount, note, dateTime });
     }
 
@@ -51,8 +58,10 @@ public static class Commands
         return Command(
             name: "update",
             description: "Update transaction.",
-            handle: Transactions.Update,
-            bind: Transactions.Bind(amount, note, dateTime, id),
+            bind: Binders.BindTransaction(amount, note, dateTime, id),
+            handle: Result.From<Transaction, Transaction, Void>(Transactions.Update),
+            resolve: Resolvers.ResolveRow,
+            reject: Rejectors.RejectText("Operation failed."),
             options: new Option[] { id, amount, note, dateTime });
     }
 
@@ -63,11 +72,12 @@ public static class Commands
         return Command(
             name: "remove",
             description: "Remove transaction.",
-            handle: Transactions.Remove,
-            bind: Transactions.BindId(id),
+            bind: Binders.BindId(id),
+            handle: Result.From<string, Void>(Transactions.Remove),
+            resolve: Resolvers.ResolveDone("Transaction removed."),
+            reject: Rejectors.RejectText("Operation failed."),
             options: new Option[] { id });
     }
-
 
     static (Option<decimal>, Option<string>, Option<DateTime>) getAddOptions() => (
         Option<decimal>(
@@ -102,5 +112,6 @@ public static class Commands
 
     static Option<string> getRemoveOptions() => Option<string>(
         name: "--id",
-        description: "The transaction id.");
+        description: "The transaction id.",
+        isRequired: true);
 }
